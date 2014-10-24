@@ -1,0 +1,195 @@
+<html>
+    <head>
+        <style>
+body{
+  min-width:480px;
+  min-height: 580px;
+  overflow-x:hidden;
+}
+.table_style{
+font-size:small;
+}
+.div_style{
+width:1000px;
+}
+
+
+.folders { background-color: #bbb; list-style-type: none; padding: 0; margin: 0; border-radius: 7px; 
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #d6d6d6), color-stop(0.4, #c0c0c0), color-stop(1,#a4a4a4)); 
+  margin: 10px 0 16px 0;
+  font-size: 0px;
+}
+.folders li:hover { background-color: #ddd; }    
+.folders li:first-child { border-left: none; border-radius: 7px 0 0 7px; }
+.folders li:last-child { border-right: none; border-radius: 0 7px 7px 0 ; }
+.folders li { font-size: 10px; font-weight: bold; display: inline-block; padding: 0.5em 1.5em; cursor: pointer; color: #444; text-shadow: #f7f7f7 0 1px 1px; border-left: 1px solid #ddd; border-right: 1px solid #888; }
+.folders li { *display: inline !important; } /* IE7 only */
+.folders .selected { background-color: #444 !important; color: white; text-shadow:none; border-right-color: #aaa; border-left: none; box-shadow:inset 1px 2px 6px #070707; }    
+
+</style>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script>
+          var data = "empty"
+function GetData(resurl)
+{
+       
+            $(document).ready(function(){
+                $.ajax({
+                    url: resurl,
+                    dataType: 'jsonp',
+                    success: function(dataWeGotViaJsonp){
+                        var text = '';
+                        var len = dataWeGotViaJsonp.length;
+                        data = JSON.stringify(dataWeGotViaJsonp)
+                        //document.getElementById("txtresult").value = data
+                        Display();
+                    }
+                });
+            })
+}
+
+function ChangeSelection(obj)
+{
+    for(j = 1;j < 7; j++)
+    {
+    var li = document.getElementById("li"+j);
+    li.className = "";
+    }
+    obj.className = "selected";
+    var rootChild = document.getElementById('rootChild');
+    if (rootChild != null) 
+        console.log('rootChild found') 
+    else 
+        console.log('rootChild NOT found')
+    document.getElementById('mainDiv').removeChild(rootChild);
+    feedTitle = obj.innerHTML
+    //Init(obj.feed);
+    
+}
+
+var feeds = ["http://www.mazamp3.com/feeds/posts/summary/-/New%20Mp3?max-results=50&alt=json-in-script","http://www.mazamp3.com/feeds/posts/summary/-/old%20is%20gold?max-results=50&alt=json-in-script","http://www.mazamp3.com/feeds/posts/summary/-/Pop%2FRemix?max-results=50&alt=json-in-script","http://www.mazamp3.com/feeds/posts/summary/-/Ilayaraja?max-results=50&amp;alt=json-in-script&amp;callback=recentpostslist","http://www.mazamp3.com/feeds/posts/summary/-/Devotional?max-results=50&amp;alt=json-in-script&amp;callback=recentpostslist","http://www.mazamp3.com/feeds/posts/summary/-/Update?max-results=50&amp;alt=json-in-script&amp;callback=recentpostslist"]
+
+
+function Display() 
+{
+/*for(j = 1;j < 7; j++)
+{
+    var li = document.getElementById("li"+j);
+    li.onclick = function(obj) { ChangeSelection(this);}
+    li.feed = feeds[j-1];
+}*/
+
+ var rootChild = document.getElementById('rootChild');
+    if (rootChild != null) 
+    {
+        console.log('rootChild found') 
+         document.getElementById('mainDiv').removeChild(rootChild);
+    }
+    else 
+        console.log('rootChild NOT found')
+
+    var feedTitle = ""
+    var mainDiv = document.getElementById("mainDiv");
+    var rootChild = document.createElement("div");
+    rootChild.id = "rootChild";
+    
+    var regImage = /[a-zA-Z0-9\-\.\%\/\\\_\-\:\+\(\)]*(png)|[a-zA-Z0-9\-\.\%\/\\\_\-\:\+\(\)]*(jpg)/g
+    var regSummary = /"summary":[A-Za-z0-9\'\\\–\"\:\,\(\)\$\{\|\.\-\ ]*/g
+    var regMovieName =   /Movie Name :(.*?)*/g 
+    var offset = 0 
+    if( feedTitle == "Latest" || feedTitle == "Old" || feedTitle == "Pop / Remix" || feedTitle == "")
+             {
+                regMovieName = /Movie Name :.*?\\/g 
+                offset = 2
+             }
+
+    var feedData = data
+    var items = feedData.match(regImage);
+    var titles = feedData.match(regMovieName);
+    //traverse(req.responseText,process);
+    
+    //Create root div for each item
+    for (var i = 0; i < items.length; i++) {
+            
+           // var movieName = titles[i].replace(/Movie Name : /g, '');
+            var movieName = titles[i] == null ? "Dummy" : titles[i].substring(13)
+            //console.log("i: "+i+"movieName : "+movieName);
+            
+            if(movieName.substring(movieName.length-1,movieName.length) == '\\')
+            {
+              movieName =  movieName.substring(0,movieName.length-1);
+            }
+            while(movieName.substring(movieName.length-1,movieName.length) == ' ')
+            {
+                console.log(movieName);
+              movieName =  movieName.substring(0,movieName.length-1);
+            }            
+
+            
+           // console.log(movieName)
+            //movieName = movieName.substring(0,movieName.length - offset)
+            //movieName.replace(/Movie Name : /g, '');
+            //var link = movieName.replace(/ /g,"%20");
+           // link = movieName.replace(/ /g,"%20");
+            var anchor = document.createElement("a");
+            //anchor.text = movieName //titles[i]// movieName+" "+ link;
+            //var link = movieName.replace(/\%C2\ |\ /g,' ')
+            var link = encodeURI(movieName)
+            link = link.replace("%C2%A0", '%20');
+            link = link.replace("%C2%A0", '');
+            link = link.replace("%E2%80%93",'-')
+            //console.log(link);
+            anchor.junk = "http://dl69.unlimited9.com/0/omzl69djk7hxdn/"+ link +".zip";
+            anchor.onclick = function() {
+                Download(this)
+            };
+            //anchor.title = "test";
+            var movie = document.createElement("img");
+            //movie.style = 'height:200px';
+            movie.title = movieName;
+
+
+            var url = items[i];
+            /* if( feedTitle == "Latest" || feedTitle == "Old" || feedTitle == "Pop / Remix" || feedTitle == "" )
+             {
+                url = items[i].replace(/\//g,"")
+                if(url.indexOf("http://") > 0)
+                {
+                    url.replace(/\/\//g,"\\")
+                }
+             }*/
+            movie.src = url;
+            mainDiv.className = "polaroid-images";
+
+            anchor.appendChild(movie);
+            
+            rootChild.appendChild(anchor);
+            mainDiv.appendChild(rootChild);
+
+        }
+
+}
+
+function Download(element)
+{
+  window.open(element.junk)
+}
+        </script>
+
+<body onload="GetData(feeds[0])"> 
+<div>
+        <ul class="folders">
+            <li id="li1" onclick="GetData(feeds[0])">Latest</li>
+            <li id="li2" onclick="GetData(feeds[1])">Old</li>
+            <li id="li3" onclick="GetData(feeds[2])">Pop / Remix</li>
+            <li id="li4" onclick="GetData(feeds[3])">Ilayaraja</li>
+            <li id="li5" onclick="GetData(feeds[4])">Devotional</li>
+            <li id="li6" onclick="GetData(feeds[5])">Newly Updated</li>
+        </ul>
+</div>
+
+<div id="mainDiv" style="align:center"> 
+
+</div>
+</body>
+</html>
